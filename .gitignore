@@ -4,5 +4,8 @@ build/
 # Public bundle is built by webpack
 public/bundle.js
 
+# app.js also by webpack
+public/app.js
+
 # The local node module repo
 node_modules/
