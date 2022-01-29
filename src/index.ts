@@ -3,7 +3,7 @@ import { HEX_HEIGHT_PX, HEX_TEMPLATE, HEX_WIDTH_PX } from "./Hexagon";
 import { HexAnimate } from "./HexAnimate";
 import { PulseHex } from "./PulseHex";
 
-const CANVAS_HEXES_ACROSS = 16;
+const CANVAS_HEXES_ACROSS = 8;
 const CANVAS_HEXES_DOWN = 16;
 const DEFAULT_HEX_COLOR = 'eeeedd';
 
@@ -72,8 +72,8 @@ function updateRender() {
 
     if (animations.length === 0) {
         animations.push(new PulseHex(
-            Math.floor(Math.random() * CANVAS_HEXES_ACROSS - 4) + 2,
-            Math.floor(Math.random() * CANVAS_HEXES_DOWN - 4) + 2,
+            Math.floor(Math.random() * (CANVAS_HEXES_ACROSS - 2)) + 1,
+            Math.floor(Math.random() * (CANVAS_HEXES_DOWN - 2)) + 1,
             timestamp,
             timestamp + 1000,
             timestamp + 3000,
