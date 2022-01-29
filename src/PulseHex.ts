@@ -21,6 +21,7 @@ export class PulseHex extends HexAnimate {
 
     public animate(timestamp: number, ctx: CanvasRenderingContext2D): boolean {
         if (timestamp > this.endTime) {
+            // Render one last time to clear all the way to the initial color
             ctx.save();
             HEX_TEMPLATE.offsetToHex(ctx, this.xIndex, this.yIndex);
             HEX_TEMPLATE.render(ctx, colorToCode(this.startColor));
