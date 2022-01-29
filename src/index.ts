@@ -72,8 +72,8 @@ function updateRender() {
 
     if (animations.length === 0) {
         animations.push(new PulseHex(
-            Math.floor(Math.random() * CANVAS_HEXES_ACROSS),
-            Math.floor(Math.random() * CANVAS_HEXES_DOWN),
+            Math.floor(Math.random() * CANVAS_HEXES_ACROSS - 4) + 2,
+            Math.floor(Math.random() * CANVAS_HEXES_DOWN - 4) + 2,
             timestamp,
             timestamp + 1000,
             timestamp + 3000,

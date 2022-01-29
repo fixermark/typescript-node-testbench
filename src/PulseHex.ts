@@ -22,7 +22,7 @@ export class PulseHex extends HexAnimate {
     public animate(timestamp: number, ctx: CanvasRenderingContext2D): boolean {
         if (timestamp > this.endTime) {
             ctx.save();
-            HEX_TEMPLATE.offsetToHex(ctx, 0, 0);
+            HEX_TEMPLATE.offsetToHex(ctx, this.xIndex, this.yIndex);
             HEX_TEMPLATE.render(ctx, colorToCode(this.startColor));
             ctx.restore();
 
