@@ -1,75 +1,24 @@
-const SEGMENT = 100 / 6;
-const HEX_HEIGHT_WIDTH_RATIO = 1.1547005;
-
-const HEX_HEIGHT_PX = 80;
-const HEX_WIDTH_PX = HEX_HEIGHT_PX * HEX_HEIGHT_WIDTH_RATIO;
-const HEX_INSET_PX = 2;
+import { codeToColor } from "./Color";
+import { HEX_HEIGHT_PX, HEX_TEMPLATE, HEX_WIDTH_PX } from "./Hexagon";
+import { HexAnimate } from "./HexAnimate";
+import { PulseHex } from "./PulseHex";
 
 const CANVAS_HEXES_ACROSS = 16;
 const CANVAS_HEXES_DOWN = 16;
 const DEFAULT_HEX_COLOR = 'eeeedd';
 
-const MAX_VALUE=0xdd;
+const MAX_VALUE = 0xdd;
 
-const FPS = 24;
+const FPS = 30;
 
 let curTime = 0;
 let currentValue = 0;
 let ascending = true;
 
-/**
- * A standard hexagon to render
- */
-class Hexagon {
-    private path: Path2D;
-    private width: number;
 
-    /**
-     * constructor
-     * @param height The height of the hexagon. Width will be height * HEX_HEIGHT_WIDTH_RATIO
-     * @param insetPx How many pixels to inset the hexagon
-     */
-    constructor(private height: number, insetPx: number) {
-        this.width = height * HEX_HEIGHT_WIDTH_RATIO;
-        const segment = this.width / 4; 
-        this.path = new Path2D();
-
-        this.path.moveTo(insetPx, height / 2);
-        this.path.lineTo(segment + insetPx, insetPx);
-        this.path.lineTo(3 * segment - insetPx, insetPx);
-        this.path.lineTo(4 * segment - insetPx, height / 2);
-        this.path.lineTo(3 * segment - insetPx, height - insetPx);
-        this.path.lineTo(segment + insetPx, height - insetPx);
-        this.path.closePath();
-    }
-
-    /**
-     * Render the hexagon at the current position
-     * 
-     * @param ctx The context into which to render
-     * @param color The color to use
-     */
-    public render(ctx: CanvasRenderingContext2D, color: string) {
-        ctx.fillStyle = '#' + color;
-        ctx.fill(this.path);
-    }
-
-    /**
-     * Offsets the transform in the 2D context to the specified hex coordinates
-     * 
-     * @param ctx Which context to update
-     * @param x X offset, in hexagons
-     * @param y y offset, in half-hexagons (i.e. if y is odd, hex will be one half-cell over)
-     */
-    public offsetToHex(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-        ctx.translate(x * this.width * 1.5 + (Math.abs(y) % 2 === 1 ? this.width * 0.75 : 0),
-        this.height * y / 2);
-    }
-}
 
 let canvas: HTMLCanvasElement;
 let context: CanvasRenderingContext2D;
-const hexTemplate = new Hexagon(HEX_HEIGHT_PX, HEX_INSET_PX);
 
 /**
  * Updates the background with the contents of a canvas
@@ -83,7 +32,7 @@ function updateBackground(canvas: HTMLCanvasElement): void {
     if (!target) {
         return;
     }
-    target.style.background=`url(${canvas.toDataURL()})`;
+    target.style.background = `url(${canvas.toDataURL()})`;
 }
 
 /**
@@ -100,15 +49,15 @@ function initCanvas() {
     context = ctx;
 
     context.fillStyle = 'white';
-    context.fillRect(0,0, canvas.width, canvas.height);
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     const DEFAULT_HEX_COLOR = 'eeeedd';
 
     for (let rows = -1; rows < CANVAS_HEXES_DOWN; rows++) {
         for (let columns = -1; columns < CANVAS_HEXES_ACROSS; columns++) {
             context.save();
-            hexTemplate.offsetToHex(context, columns, rows);
-            hexTemplate.render(context, DEFAULT_HEX_COLOR);
+            HEX_TEMPLATE.offsetToHex(context, columns, rows);
+            HEX_TEMPLATE.render(context, DEFAULT_HEX_COLOR);
             context.restore();
         }
     }
@@ -116,32 +65,33 @@ function initCanvas() {
     updateBackground(canvas);
 }
 
+let animations: HexAnimate[] = [];
+
 function updateRender() {
-    let increment = (MAX_VALUE / 4.0 / FPS);
-    if(!ascending) {
-        increment = -increment;
+    const timestamp = Date.now();
+
+    if (animations.length === 0) {
+        animations.push(new PulseHex(
+            Math.floor(Math.random() * CANVAS_HEXES_ACROSS),
+            Math.floor(Math.random() * CANVAS_HEXES_DOWN),
+            timestamp,
+            timestamp + 1000,
+            timestamp + 3000,
+            codeToColor(DEFAULT_HEX_COLOR)!,
+            {
+                r: Math.random() * 256,
+                g: Math.random() * 256,
+                b: Math.random() * 256,
+            }
+        ));
     }
 
-    currentValue += increment;
-    if (currentValue > MAX_VALUE || currentValue < 0) {
-        currentValue = Math.min(MAX_VALUE, Math.max(0, currentValue));
-        ascending = !ascending;
-    }
-
-    let stringRep = Math.floor(currentValue).toString(16);
-    while (stringRep.length < 2) {
-        stringRep = '0' + stringRep;
-    }
-
-    context.save();
-    hexTemplate.offsetToHex(context, 0,0);
-    hexTemplate.render(context, 'eeee' + stringRep);
-    context.restore();
+    animations = animations.filter((animation) => animation.animate(timestamp, context));
 
     updateBackground(canvas);
 
-    setTimeout(updateRender, 1000/FPS);
+    setTimeout(updateRender, 1000 / FPS);
 }
 
 initCanvas();
-setTimeout(updateRender, 1000/FPS);
+setTimeout(updateRender, 1000 / FPS);
